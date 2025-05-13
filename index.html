@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Input Data Buzzer kage</title>
+<title>Input Data & Admin View</title>
 <style>
   /* Reset & base */
   * {
@@ -130,8 +130,8 @@
       <label for="telegram">Username Telegram</label>
       <input id="telegram" name="telegram" type="text" autocomplete="off" required placeholder="Masukkan username Telegram" />
 
-      <label for="dana">Nomor Dana</label>
-      <input id="dana" name="dana" type="tel" autocomplete="off" pattern="^\d{6,20}$" required placeholder="Nomor Dana (6—20 digit)" />
+      <label for="dana">Nomor Dana atau Rekening Seabank</label>
+      <input id="dana" name="dana" type="tel" autocomplete="off" pattern="^[\d\s\-]{6,30}$" required placeholder="Nomor Dana atau Rekening (6-30 digit/karakter)" />
 
       <div class="message" id="formMessage"></div>
 
@@ -165,7 +165,6 @@
   (function() {
     const form = document.getElementById('dataForm');
     const formMessage = document.getElementById('formMessage');
-    const entryList = document.getElementById('entryList'); // Unused but kept from previous, or can remove
     const toggleAdminBtn = document.getElementById('toggleAdminBtn');
     const adminLoginForm = document.getElementById('adminLoginForm');
     const adminPasswordInput = document.getElementById('adminPassword');
@@ -174,7 +173,7 @@
     const adminEntryList = document.getElementById('adminEntryList');
     const adminLogoutBtn = document.getElementById('adminLogoutBtn');
 
-    const ADMIN_PASSWORD = '0kahe0j#'; // Hardcoded admin password
+    const ADMIN_PASSWORD = 'admin123'; // Hardcoded admin password
 
     // Load entries from localStorage or empty array
     function loadEntries() {
@@ -199,11 +198,19 @@
         if(input.name === 'whatsapp') {
           input.setCustomValidity('Masukkan nomor WhatsApp yang valid (hanya angka, spasi, + atau tanda minus).');
         } else if(input.name === 'dana') {
-          input.setCustomValidity('Nomor Dana harus berupa 6 sampai 20 digit angka.');
+          input.setCustomValidity('Nomor Dana atau Rekening harus berupa 6 sampai 30 digit, spasi atau tanda minus.');
         }
       } else {
         input.setCustomValidity('');
       }
+    }
+
+    // Sanitize strings to prevent SQL injection-like patterns
+    // Remove characters: ; -- ' " = /* */ and common SQL keywords filtered roughly
+    function sanitizeInput(str) {
+      return str.replace(/['";=\\\-\/\*]+/g, '') // remove these characters
+                .replace(/\b(SELECT|INSERT|DELETE|UPDATE|DROP|ALTER|CREATE|EXEC|UNION|WHERE|FROM|--|#)\b/gi, '')
+                .trim();
     }
 
     // Render entries list for admin view
@@ -217,7 +224,8 @@
       entries.forEach((entry, idx) => {
         const div = document.createElement('div');
         div.className = 'entry-item';
-        div.textContent = `#${idx + 1} Nama: ${entry.name} | WA: ${entry.whatsapp} | Telegram: ${entry.telegram} | Dana: ${entry.dana}`;
+        // Display sanitized display to reflect what was stored
+        div.textContent = `#${idx + 1} Nama: ${entry.name} | WA: ${entry.whatsapp} | Telegram: ${entry.telegram} | Dana/Rek: ${entry.dana}`;
         adminEntryList.appendChild(div);
       });
     }
@@ -273,14 +281,20 @@
       formMessage.textContent = '';
       formMessage.className = 'message';
 
-      const name = form.name.value.trim();
-      const whatsapp = form.whatsapp.value.trim();
-      const telegram = form.telegram.value.trim();
-      const dana = form.dana.value.trim();
+      let name = form.name.value.trim();
+      let whatsapp = form.whatsapp.value.trim();
+      let telegram = form.telegram.value.trim();
+      let dana = form.dana.value.trim();
 
-      // Simple validation check
+      // Sanitize inputs
+      name = sanitizeInput(name);
+      whatsapp = sanitizeInput(whatsapp);
+      telegram = sanitizeInput(telegram);
+      dana = sanitizeInput(dana);
+
+      // Check again after sanitizing if any are empty
       if(!name || !whatsapp || !telegram || !dana) {
-        formMessage.textContent = 'Semua kolom wajib diisi.';
+        formMessage.textContent = 'Semua kolom wajib diisi dengan data valid tanpa karakter terlarang.';
         return;
       }
 
