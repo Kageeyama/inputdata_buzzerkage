@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Input Data Buzzer kage</title>
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 600px;
+    max-width: 350px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1rem;
+  }
+  .container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    width: 100%;
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: #0d47a1;
+    text-align: center;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+  }
+  label {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: #333;
+  }
+  input[type="text"], input[type="tel"], input[type="password"] {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1.5px solid #bbb;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  input[type="text"]:focus, input[type="tel"]:focus, input[type="password"]:focus {
+    outline: none;
+    border-color: #0d47a1;
+    box-shadow: 0 0 6px #0d47a1aa;
+  }
+  button {
+    background-color: #0d47a1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #08306b;
+  }
+  .message {
+    margin: 10px 0;
+    font-weight: 600;
+    color: #d32f2f;
+    text-align: center;
+  }
+  .success {
+    color: #2e7d32;
+  }
+  .entry-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+    color: #222;
+    font-size: 0.9rem;
+  }
+  .entry-item {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+  }
+  .admin-section {
+    border-top: 2px solid #0d47a1;
+    padding-top: 15px;
+  }
+  .toggle-admin {
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  .admin-message {
+    font-weight: 600;
+    margin: 8px 0;
+    color: #d32f2f;
+    text-align: center;
+  }
+  @media (max-width: 400px) {
+    body {
+      padding: 10px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <h1>Input Data Anda</h1>
+    <form id="dataForm" novalidate>
+      <label for="name">Nama</label>
+      <input id="name" name="name" type="text" autocomplete="off" required placeholder="Masukkan nama" />
+
+      <label for="whatsapp">Nomor WhatsApp</label>
+      <input id="whatsapp" name="whatsapp" type="tel" autocomplete="off" pattern="^\+?[\d\s\-]{6,15}$" required placeholder="Misal: +6281234567890" />
+
+      <label for="telegram">Username Telegram</label>
+      <input id="telegram" name="telegram" type="text" autocomplete="off" required placeholder="Masukkan username Telegram" />
+
+      <label for="dana">Nomor Dana</label>
+      <input id="dana" name="dana" type="tel" autocomplete="off" pattern="^\d{6,20}$" required placeholder="Nomor Dana (6—20 digit)" />
+
+      <div class="message" id="formMessage"></div>
+
+      <button type="submit">Simpan Data</button>
+    </form>
+
+    <div class="admin-section">
+      <div class="toggle-admin">
+        <button id="toggleAdminBtn">Login Admin</button>
+      </div>
+
+      <form id="adminLoginForm" style="display:none;" novalidate>
+        <label for="adminPassword">Password Admin</label>
+        <input id="adminPassword" name="adminPassword" type="password" autocomplete="off" placeholder="Masukkan password admin" />
+        <div class="admin-message" id="adminLoginMessage"></div>
+        <button type="submit">Masuk</button>
+      </form>
+
+      <div id="adminView" style="display:none;">
+        <h2 style="text-align:center; color:#0d47a1; margin-bottom:10px;">Data Tersimpan (Admin)</h2>
+        <div class="entry-list" id="adminEntryList" aria-live="polite" aria-atomic="true" aria-relevant="additions"></div>
+        <div style="text-align:center; margin-top:10px;">
+          <button id="adminLogoutBtn" style="background:#d32f2f;">Logout Admin</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  (function() {
+    const form = document.getElementById('dataForm');
+    const formMessage = document.getElementById('formMessage');
+    const entryList = document.getElementById('entryList'); // Unused but kept from previous, or can remove
+    const toggleAdminBtn = document.getElementById('toggleAdminBtn');
+    const adminLoginForm = document.getElementById('adminLoginForm');
+    const adminPasswordInput = document.getElementById('adminPassword');
+    const adminLoginMessage = document.getElementById('adminLoginMessage');
+    const adminView = document.getElementById('adminView');
+    const adminEntryList = document.getElementById('adminEntryList');
+    const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+
+    const ADMIN_PASSWORD = '0kahe0j#'; // Hardcoded admin password
+
+    // Load entries from localStorage or empty array
+    function loadEntries() {
+      const stored = localStorage.getItem('dataEntries');
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    // Save entries to localStorage
+    function saveEntries(entries) {
+      localStorage.setItem('dataEntries', JSON.stringify(entries));
+    }
+
+    // Check if name is already used (case insensitive)
+    function isNameDuplicate(name) {
+      const entries = loadEntries();
+      return entries.some(e => e.name.toLowerCase() === name.toLowerCase());
+    }
+
+    // Validate pattern fields with custom message
+    function validatePattern(input) {
+      if(input.validity.patternMismatch) {
+        if(input.name === 'whatsapp') {
+          input.setCustomValidity('Masukkan nomor WhatsApp yang valid (hanya angka, spasi, + atau tanda minus).');
+        } else if(input.name === 'dana') {
+          input.setCustomValidity('Nomor Dana harus berupa 6 sampai 20 digit angka.');
+        }
+      } else {
+        input.setCustomValidity('');
+      }
+    }
+
+    // Render entries list for admin view
+    function renderAdminEntries() {
+      const entries = loadEntries();
+      if(entries.length === 0) {
+        adminEntryList.innerHTML = '<p style="text-align:center; color:#666;">Belum ada data tersimpan.</p>';
+        return;
+      }
+      adminEntryList.innerHTML = '';
+      entries.forEach((entry, idx) => {
+        const div = document.createElement('div');
+        div.className = 'entry-item';
+        div.textContent = `#${idx + 1} Nama: ${entry.name} | WA: ${entry.whatsapp} | Telegram: ${entry.telegram} | Dana: ${entry.dana}`;
+        adminEntryList.appendChild(div);
+      });
+    }
+
+    // Initial state: admin login form hidden, admin view hidden
+    adminLoginForm.style.display = 'none';
+    adminView.style.display = 'none';
+
+    toggleAdminBtn.addEventListener('click', () => {
+      if(adminLoginForm.style.display === 'none') {
+        adminLoginForm.style.display = 'flex';
+        adminLoginForm.style.flexDirection = 'column';
+        toggleAdminBtn.style.display = 'none';
+        adminLoginMessage.textContent = '';
+        adminPasswordInput.value = '';
+        adminPasswordInput.focus();
+      }
+    });
+
+    adminLoginForm.addEventListener('submit', e => {
+      e.preventDefault();
+      adminLoginMessage.textContent = '';
+      if(adminPasswordInput.value === ADMIN_PASSWORD) {
+        adminLoginForm.style.display = 'none';
+        adminView.style.display = 'block';
+        toggleAdminBtn.style.display = 'none';
+        renderAdminEntries();
+      } else {
+        adminLoginMessage.textContent = 'Password salah. Silakan coba lagi.';
+      }
+    });
+
+    adminLogoutBtn.addEventListener('click', () => {
+      adminView.style.display = 'none';
+      toggleAdminBtn.style.display = 'block';
+      adminLoginMessage.textContent = '';
+      adminPasswordInput.value = '';
+      adminLoginForm.style.display = 'none';
+    });
+
+    form.addEventListener('input', e => {
+      if(e.target.name === 'whatsapp' || e.target.name === 'dana') {
+        validatePattern(e.target);
+      }
+      formMessage.textContent = '';
+      formMessage.className = 'message';
+    });
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Clear previous messages
+      formMessage.textContent = '';
+      formMessage.className = 'message';
+
+      const name = form.name.value.trim();
+      const whatsapp = form.whatsapp.value.trim();
+      const telegram = form.telegram.value.trim();
+      const dana = form.dana.value.trim();
+
+      // Simple validation check
+      if(!name || !whatsapp || !telegram || !dana) {
+        formMessage.textContent = 'Semua kolom wajib diisi.';
+        return;
+      }
+
+      if(!form.whatsapp.checkValidity()) {
+        formMessage.textContent = form.whatsapp.validationMessage;
+        return;
+      }
+      if(!form.dana.checkValidity()) {
+        formMessage.textContent = form.dana.validationMessage;
+        return;
+      }
+
+      if(isNameDuplicate(name)) {
+        formMessage.textContent = 'Nama sudah digunakan, silakan gunakan nama lain.';
+        return;
+      }
+
+      // Save entry
+      const entries = loadEntries();
+      entries.push({name, whatsapp, telegram, dana});
+      saveEntries(entries);
+
+      // Show success message
+      formMessage.textContent = 'Data berhasil disimpan!';
+      formMessage.classList.add('success');
+
+      // Clear form
+      form.reset();
+      form.name.focus();
+
+      // Update admin view data if visible
+      if(adminView.style.display === 'block') {
+        renderAdminEntries();
+      }
+    });
+
+  })();
+</script>
+</body>
+</html>
+
