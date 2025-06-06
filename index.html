@@ -1,421 +1,191 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Input Data buzzer kage</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KageBuzzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        function updateOptions() {
+            const itemType = document.getElementById("itemType").value;
+            const options = document.getElementById("options");
+            options.innerHTML = "";
 
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-  body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: #f5f7fa;
-    color: #1e293b;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 640px;
-    max-width: 380px;
-    padding: 1.5rem 1rem 2rem 1rem;
-  }
-  .container {
-    background: #fff;
-    width: 100%;
-    max-height: 640px;
-    padding: 32px 28px 40px 28px;
-    border-radius: 20px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-  }
-  h1, h2 {
-    margin: 0 0 20px 0;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-align: center;
-  }
-  h1 {
-    color: #2563eb;
-  }
-  h2 {
-    color: #111827;
-    margin-bottom: 18px;
-  }
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    margin-bottom: 32px;
-  }
-  label {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #475569;
-  }
-  input[type="text"], input[type="tel"], input[type="password"] {
-    background: #f9fafb;
-    border: 2px solid #cbd5e1;
-    border-radius: 15px;
-    padding: 12px 16px;
-    font-size: 1rem;
-    color: #0f172a;
-    font-weight: 500;
-    font-family: 'Poppins', sans-serif;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  input::placeholder {
-    color: #94a3b8;
-    font-weight: 400;
-  }
-  input:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 10px 3px #2563eb88;
-    background-color: #eff6ff;
-  }
-  button {
-    background: linear-gradient(135deg, #2563eb, #3b82f6);
-    color: white;
-    border: none;
-    border-radius: 24px;
-    padding: 14px;
-    font-size: 1.15rem;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.05em;
-    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.5);
-    transition: background 0.4s ease, box-shadow 0.4s ease;
-    font-family: 'Poppins', sans-serif;
-  }
-  button:hover, button:focus {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    box-shadow: 0 12px 28px rgba(59, 130, 246, 0.7);
-  }
-  .message {
-    font-weight: 600;
-    margin: 12px 0 10px 0;
-    color: #dc2626;
-    text-align: center;
-    min-height: 26px;
-    letter-spacing: 0.04em;
-  }
-  .success {
-    color: #16a34a;
-  }
-  /* Admin panel styles - dark black/blue theme */
-  #adminPanel {
-    background: #0b1120;
-    color: #cbd5e1;
-    border-radius: 20px;
-    padding: 24px 20px 28px 20px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.6);
-    margin-top: 36px;
-    display: flex;
-    flex-direction: column;
-  }
-  #adminPanel h2 {
-    color: #3b82f6;
-    margin-bottom: 18px;
-  }
-  #adminLoginForm {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  #adminLoginForm label {
-    color: #a5b4fc;
-  }
-  #adminLoginForm input[type="password"] {
-    background: #1e293b;
-    border: none;
-    border-radius: 14px;
-    padding: 12px 16px;
-    font-size: 1rem;
-    color: #e0e7ff;
-  }
-  #adminLoginForm input[type="password"]::placeholder {
-    color: #94a3b8;
-  }
-  #adminLoginForm input[type="password"]:focus {
-    outline: none;
-    box-shadow: 0 0 12px 3px #3b82f6aa;
-    background-color: #28324d;
-  }
-  #adminLoginForm button {
-    background: linear-gradient(135deg, #2563eb, #3b82f6);
-    border-radius: 20px;
-    padding: 14px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: white;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.6);
-    letter-spacing: 0.05em;
-    transition: background 0.4s ease;
-  }
-  #adminLoginForm button:hover, #adminLoginForm button:focus {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-  }
-  #adminLoginMessage {
-    margin: 12px 0 18px;
-    font-weight: 600;
-    color: #f87171;
-    text-align: center;
-    min-height: 28px;
-    letter-spacing: 0.03em;
-  }
-  #adminEntryList {
-    max-height: 300px;
-    overflow-y: auto;
-    border-top: 2px solid #3b82f6aa;
-    padding-top: 12px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #bfc9ff;
-  }
-  .admin-entry {
-    padding: 12px 14px;
-    border-bottom: 1px solid #33415588;
-    background: #1e2a59bb;
-    margin-bottom: 8px;
-    border-radius: 12px;
-    user-select: text;
-    transition: background-color 0.25s ease;
-  }
-  .admin-entry:nth-child(odd) {
-    background-color: #141c36bb;
-  }
-  .admin-entry:hover {
-    background-color: #1e2a59dd;
-  }
-  #adminLogoutBtn {
-    margin-top: 20px;
-    background: #1e40af;
-    border-radius: 24px;
-    padding: 14px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: white;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.7);
-    transition: background 0.3s ease;
-  }
-  #adminLogoutBtn:hover, #adminLogoutBtn:focus {
-    background: #3b82f6;
-  }
-  #adminEntryList::-webkit-scrollbar {
-    width: 9px;
-  }
-  #adminEntryList::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  #adminEntryList::-webkit-scrollbar-thumb {
-    background-color: #3b82f6cc;
-    border-radius: 12px;
-    border: 3px solid transparent;
-  }
-  @media (max-width: 400px) {
-    body {
-      padding: 16px 14px 26px 14px;
-    }
-    .container {
-      padding: 28px 24px 36px 24px;
-    }
-    h1, h2 {
-      font-size: 1.25rem;
-    }
-    button, #adminLogoutBtn, #adminLoginForm button {
-      font-size: 1rem;
-      padding: 12px;
-    }
-    #adminEntryList {
-      font-size: 0.9rem;
-    }
-  }
-</style>
+            if (itemType === "Report Akun") {
+                options.innerHTML = `
+                    <option value="Report Tiktok">Report Tiktok</option>
+                    <option value="Report Instagram">Report Instagram</option>
+                    <option value="Report X">Report X</option>
+                    <option value="Report WhatsApp">Report WhatsApp</option>
+                    <option value="Report YouTube">Report YouTube</option>
+                    <option value="Lainnya">Lainnya</option>
+                `;
+            } else if (itemType === "Spam Chat") {
+                options.innerHTML = `
+                    <option value="Spam chat 1x kasar">Spam chat 1x kasar (Rp 850)</option>
+                    <option value="Spam chat 1x tidak">Spam chat 1x tidak (Rp 800)</option>
+                    <option value="Spam chat 3x kasar">Spam chat 3x kasar (Rp 1000)</option>
+                    <option value="Spam chat 3x tidak">Spam chat 3x tidak (Rp 900)</option>
+                    <option value="Spam chat 5x kasar">Spam chat 5x kasar (Rp 1250)</option>
+                    <option value="Spam chat 5x tidak">Spam chat 5x tidak (Rp 1100)</option>
+                `;
+            } else if (itemType === "Spam Call") {
+                options.innerHTML = `
+                    <option value="Spam call 1x">Spam call 1x (Rp 700)</option>
+                    <option value="Spam call 2x">Spam call 2x (Rp 750)</option>
+                    <option value="Spam call 3x">Spam call 3x (Rp 800)</option>
+                    <option value="Spam call 5x">Spam call 5x (Rp 900)</option>
+                `;
+            }
+        }
+
+        function calculatePrice() {
+            const itemType = document.getElementById("itemType").value;
+            const quantity = parseInt(document.getElementById("quantity").value) || 1;
+            const selectedOption = document.getElementById("options").value;
+            let price = 0;
+
+            if (itemType === "Report Akun") {
+                price = 500;
+            } else if (itemType === "Spam Chat") {
+                if (selectedOption.includes("1x kasar")) price = 850;
+                else if (selectedOption.includes("1x tidak")) price = 800;
+                else if (selectedOption.includes("3x kasar")) price = 1000;
+                else if (selectedOption.includes("3x tidak")) price = 900;
+                else if (selectedOption.includes("5x kasar")) price = 1250;
+                else if (selectedOption.includes("5x tidak")) price = 1100;
+            } else if (itemType === "Spam Call") {
+                if (selectedOption.includes("1x")) price = 700;
+                else if (selectedOption.includes("2x")) price = 750;
+                else if (selectedOption.includes("3x")) price = 800;
+                else if (selectedOption.includes("5x")) price = 900;
+            }
+
+            document.getElementById("totalPrice").value = price * quantity;
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+
+            fetch('https://script.google.com/macros/s/AKfycbx_m-0c93zz41KO4hfQF7WkssO0gjpxbkJ46vXDknZEUH39jdiYvq5iW2mYfPkzig6V/exec', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert('Data berhasil dikirim & notifikasi WhatsApp terkirim!');
+                event.target.reset();
+                document.getElementById("totalPrice").value = '';
+                document.getElementById("options").innerHTML = '<option value="">Pilih...</option>';
+            })
+            .catch(error => alert('Terjadi kesalahan: ' + error));
+        }
+    </script>
 </head>
 <body>
-  <main class="container" role="main" aria-label="Input data dan halaman admin">
+    <div class="container">
+        <h1>KageBuzzer</h1>
+        <form onsubmit="submitForm(event)">
+            <label for="name">Nama:</label>
+            <input type="text" id="name" name="name" required>
 
-    <h1>Input Data Anda</h1>
-    <form id="dataForm" novalidate autocomplete="off" spellcheck="false" aria-describedby="formMessage" >
-      <label for="name">Nama</label>
-      <input id="name" name="name" type="text" placeholder="Masukkan nama" required autocomplete="name" aria-required="true" />
+            <label for="whatsapp">No WhatsApp (cth: 628xxxx):</label>
+            <input type="text" id="whatsapp" name="whatsapp" required>
 
-      <label for="telegram">Username Telegram</label>
-      <input id="telegram" name="telegram" type="text" placeholder="Masukkan username Telegram" required autocomplete="off" spellcheck="false" aria-required="true" />
+            <label for="itemType">Nama Barang:</label>
+            <select id="itemType" name="itemType" onchange="updateOptions(); calculatePrice();" required>
+                <option value="">Pilih...</option>
+                <option value="Report Akun">Report Akun</option>
+                <option value="Spam Chat">Spam Chat</option>
+                <option value="Spam Call">Spam Call</option>
+            </select>
 
-      <label for="dana">Nomor Dana / Rekening Seabank</label>
-      <input id="dana" name="dana" type="text" placeholder="Nomor Dana atau Rekening" required autocomplete="off" spellcheck="false" aria-required="true" />
+            <label for="options">Pilihan:</label>
+            <select id="options" name="options" onchange="calculatePrice()" required>
+                <option value="">Pilih...</option>
+            </select>
 
-      <label for="whatsapp">Nomor WhatsApp</label>
-      <input id="whatsapp" name="whatsapp" type="tel" pattern="^\+?[\d\s\-]{6,15}$" placeholder="Misal: +6281234567890" required autocomplete="tel" aria-required="true" />
+            <label for="quantity">Jumlah:</label>
+            <input type="number" id="quantity" name="quantity" value="1" min="1" onchange="calculatePrice()" required>
 
-      <div class="message" id="formMessage" role="alert" aria-live="polite" aria-atomic="true"></div>
+            <label for="totalPrice">Total Harga:</label>
+            <input type="text" id="totalPrice" name="totalPrice" readonly>
 
-      <button type="submit" aria-label="Simpan data">Simpan Data</button>
-    </form>
+            <label for="paymentMethod">Metode Pembayaran:</label>
+            <div style="margin-bottom: 15px;">
+                <a href="https://wa.me/6288221258850?text=Metode+pembayaran" 
+                   target="_blank" 
+                   style="display: inline-block; width: 100%; text-align: center; background-color: #007bff; color: white; padding: 10px 15px; border-radius: 4px; text-decoration: none;">
+                    Lihat Metode Pembayaran
+                </a>
+            </div>
 
-    <section id="adminPanel" aria-labelledby="adminPanelTitle">
+            <label for="description">Deskripsi:</label>
+            <textarea id="description" name="description" rows="4"></textarea>
 
-      <h2 id="adminPanelTitle">Halaman Admin</h2>
+            <button type="submit">Kirim</button>
+        </form>
+    </div>
 
-      <form id="adminLoginForm" spellcheck="false" aria-describedby="adminLoginMessage">
-        <label for="adminPassword">Masukkan Password Admin</label>
-        <input id="adminPassword" name="adminPassword" type="password" placeholder="Password Admin" autocomplete="current-password" aria-required="true" />
-        <div id="adminLoginMessage" role="alert" aria-live="polite"></div>
-        <button type="submit" aria-label="Masuk ke halaman admin">Masuk</button>
-      </form>
-
-      <div id="adminContent" style="display:none;" tabindex="0" aria-live="polite" aria-atomic="true" aria-labelledby="adminPanelTitle">
-        <div id="adminEntryList" role="region" aria-label="Daftar data pengguna tersimpan"></div>
-        <button id="adminLogoutBtn" aria-label="Logout halaman admin">Logout Admin</button>
-      </div>
-
-    </section>
-
-  </main>
-
-<script>
-  (function(){
-    const ADMIN_PASSWORD = 'Aiyqoqh1019k';
-
-    const dataForm = document.getElementById('dataForm');
-    const formMessage = document.getElementById('formMessage');
-    const adminLoginForm = document.getElementById('adminLoginForm');
-    const adminPasswordInput = document.getElementById('adminPassword');
-    const adminLoginMessage = document.getElementById('adminLoginMessage');
-    const adminContent = document.getElementById('adminContent');
-    const adminEntryList = document.getElementById('adminEntryList');
-    const adminLogoutBtn = document.getElementById('adminLogoutBtn');
-
-    // Load entries from localStorage or empty array
-    function loadEntries() {
-      const stored = localStorage.getItem('dataEntries');
-      return stored ? JSON.parse(stored) : [];
-    }
-
-    // Save entries to localStorage
-    function saveEntries(entries) {
-      localStorage.setItem('dataEntries', JSON.stringify(entries));
-    }
-
-    // Escape text for HTML
-    function escapeHtml(text) {
-      return text.replace(/[&<>"']/g, function(m) {
-        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
-      });
-    }
-
-    // Check if name is already used (case insensitive)
-    function isNameDuplicate(name) {
-      const entries = loadEntries();
-      return entries.some(e => e.name.toLowerCase() === name.toLowerCase());
-    }
-
-    // Validate WhatsApp number pattern
-    function validateWhatsApp(value) {
-      return /^\+?[\d\s\-]{6,15}$/.test(value);
-    }
-
-    // Render admin entries list
-    function renderAdminEntries() {
-      const entries = loadEntries();
-      if(entries.length === 0) {
-        adminEntryList.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:12px;">Belum ada data tersimpan.</p>';
-        return;
-      }
-      adminEntryList.innerHTML = '';
-      entries.forEach((entry, i) => {
-        const div = document.createElement('div');
-        div.className = 'admin-entry';
-        div.innerHTML = `<strong>#${i+1}</strong><br>
-          <strong>Nama:</strong> ${escapeHtml(entry.name)}<br>
-          <strong>Telegram:</strong> ${escapeHtml(entry.telegram)}<br>
-          <strong>Dana / Rekening:</strong> ${escapeHtml(entry.dana)}<br>
-          <strong>WhatsApp:</strong> ${escapeHtml(entry.whatsapp)}`;
-        adminEntryList.appendChild(div);
-      });
-    }
-
-    // Clear form message
-    function clearFormMessage() {
-      formMessage.textContent = '';
-      formMessage.className = 'message';
-    }
-
-    // Form input event clears messages
-    dataForm.addEventListener('input', clearFormMessage);
-
-    // Handle data form submit
-    dataForm.addEventListener('submit', e => {
-      e.preventDefault();
-      clearFormMessage();
-
-      const name = dataForm.name.value.trim();
-      const telegram = dataForm.telegram.value.trim();
-      const dana = dataForm.dana.value.trim();
-      const whatsapp = dataForm.whatsapp.value.trim();
-
-      if(!name || !telegram || !dana || !whatsapp) {
-        formMessage.textContent = 'Semua kolom wajib diisi.';
-        return;
-      }
-      if(!validateWhatsApp(whatsapp)) {
-        formMessage.textContent = 'Nomor WhatsApp tidak valid.';
-        return;
-      }
-      if(isNameDuplicate(name)) {
-        formMessage.textContent = 'Nama sudah digunakan, silakan gunakan nama lain.';
-        return;
-      }
-
-      const entries = loadEntries();
-      entries.push({name, telegram, dana, whatsapp});
-      saveEntries(entries);
-
-      formMessage.textContent = 'Data berhasil disimpan!';
-      formMessage.classList.add('success');
-
-      dataForm.reset();
-      dataForm.name.focus();
-
-      if(adminContent.style.display === 'block') {
-        renderAdminEntries();
-      }
-    });
-
-    // Admin login form submit
-    adminLoginForm.addEventListener('submit', e => {
-      e.preventDefault();
-      adminLoginMessage.textContent = '';
-      if(adminPasswordInput.value === ADMIN_PASSWORD) {
-        adminLoginForm.style.display = 'none';
-        adminContent.style.display = 'block';
-        adminPasswordInput.value = '';
-        renderAdminEntries();
-      } else {
-        adminLoginMessage.textContent = 'Password salah. Silakan coba lagi.';
-      }
-    });
-
-    // Admin logout
-    adminLogoutBtn.addEventListener('click', () => {
-      adminContent.style.display = 'none';
-      adminLoginForm.style.display = 'flex';
-      adminLoginMessage.textContent = '';
-      adminPasswordInput.value = '';
-      adminPasswordInput.focus();
-    });
-  })();
-</script>
+    <div class="footer">
+        <p>Jika terjadi kendala, hubungi kami di <a href="https://wa.me/6288221258850">WhatsApp</a></p>
+    </div>
 </body>
 </html>
