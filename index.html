@@ -120,22 +120,102 @@
             document.getElementById("totalPrice").value = price * quantity;
         }
 
+        // --- FUNGSI YANG DIUBAH SECARA SIGNIFIKAN ---
         function submitForm(event) {
             event.preventDefault();
-            const formData = new FormData(event.target);
 
-            fetch('https://script.google.com/macros/s/AKfycbx_m-0c93zz41KO4hfQF7WkssO0gjpxbkJ46vXDknZEUH39jdiYvq5iW2mYfPkzig6V/exec', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                alert('Data berhasil dikirim & notifikasi WhatsApp terkirim!');
-                event.target.reset();
-                document.getElementById("totalPrice").value = '';
-                document.getElementById("options").innerHTML = '<option value="">Pilih...</option>';
-            })
-            .catch(error => alert('Terjadi kesalahan: ' + error));
+            // Ambil semua data dari form
+            const name = document.getElementById("name").value;
+            const buyerWhatsapp = document.getElementById("whatsapp").value; // Nomor pembeli
+            const itemType = document.getElementById("itemType").value;
+            const options = document.getElementById("options").value;
+            const quantity = document.getElementById("quantity").value;
+            const totalPrice = document.getElementById("totalPrice").value;
+            const description = document.getElementById("description").value || "Tidak ada";
+
+            // Detail API UltraMsg Anda
+            const instanceId = "instance124153";
+            const token = "9pq0mclkqkwdfs68";
+            const adminWhatsapp = "6288221258850"; // Nomor WA Anda untuk menerima notifikasi
+            
+            const apiUrl = `https://api.ultramsg.com/${instanceId}/messages/chat`;
+
+            // 1. Buat Pesan untuk ADMIN
+            const adminMessageBody = `🔔 *Pesanan Baru KageBuzzer* 🔔
+
+*Nama Pelanggan:* ${name}
+*No. WhatsApp:* ${buyerWhatsapp}
+------------------------------
+*Jenis Barang:* ${itemType}
+*Pilihan:* ${options}
+*Jumlah:* ${quantity}
+*Total Harga:* Rp ${totalPrice}
+------------------------------
+*Deskripsi/Target:*
+${description}
+
+Mohon untuk segera diproses.`;
+
+            // 2. Buat Pesan untuk PEMBELI
+            const buyerMessageBody = `Halo ${name},
+
+Terima kasih telah melakukan pemesanan di *KageBuzzer*. Pesanan Anda telah kami terima dan akan segera diproses.
+
+*Detail Pesanan:*
+- Layanan: ${itemType}
+- Total: *Rp ${totalPrice}*
+
+Admin kami akan segera menghubungi Anda dari nomor ${adminWhatsapp} untuk konfirmasi dan instruksi selanjutnya.
+
+Terima kasih!`;
+
+            // Payload untuk dikirim ke API
+            const adminPayload = { token, to: adminWhatsapp, body: adminMessageBody };
+            const buyerPayload = { token, to: buyerWhatsapp, body: buyerMessageBody };
+            
+            // Nonaktifkan tombol kirim untuk mencegah klik ganda
+            event.target.querySelector('button').disabled = true;
+            event.target.querySelector('button').textContent = 'Mengirim...';
+
+            // Kirim kedua notifikasi secara bersamaan
+            const sendAdminNotif = fetch(apiUrl, {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(adminPayload)
+            });
+
+            const sendBuyerNotif = fetch(apiUrl, {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(buyerPayload)
+            });
+
+            Promise.all([sendAdminNotif, sendBuyerNotif])
+                .then(responses => Promise.all(responses.map(res => res.json())))
+                .then(data => {
+                    const adminResult = data[0];
+                    const buyerResult = data[1];
+
+                    console.log("Admin Response:", adminResult);
+                    console.log("Buyer Response:", buyerResult);
+
+                    if (buyerResult.sent === "true") {
+                        alert('Pesanan berhasil dikirim! Kami juga telah mengirimkan notifikasi konfirmasi ke nomor WhatsApp Anda.');
+                    } else {
+                        // Jika notif ke pembeli gagal, beri tahu mereka tapi pesanan tetap masuk
+                        alert(`Pesanan Anda berhasil diterima oleh admin, namun kami gagal mengirim notifikasi ke nomor Anda. Mohon tunggu admin menghubungi Anda.`);
+                    }
+                    
+                    // Reset form setelah semuanya selesai
+                    event.target.reset();
+                    document.getElementById("totalPrice").value = '';
+                    document.getElementById("options").innerHTML = '<option value="">Pilih...</option>';
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    alert('Terjadi kesalahan teknis yang tidak terduga. Silakan hubungi admin secara manual melalui WhatsApp.');
+                })
+                .finally(() => {
+                    // Aktifkan kembali tombol kirim apa pun hasilnya
+                    event.target.querySelector('button').disabled = false;
+                    event.target.querySelector('button').textContent = 'Kirim';
+                });
         }
     </script>
 </head>
@@ -146,7 +226,7 @@
             <label for="name">Nama:</label>
             <input type="text" id="name" name="name" required>
 
-            <label for="whatsapp">No WhatsApp (cth: 628xxxx):</label>
+            <label for="whatsapp">No WhatsApp Anda (cth: 628xxxx):</label>
             <input type="text" id="whatsapp" name="whatsapp" required>
 
             <label for="itemType">Nama Barang:</label>
@@ -178,7 +258,7 @@
             </div>
 
             <label for="description">Deskripsi:</label>
-            <textarea id="description" name="description" rows="4"></textarea>
+            <textarea id="description" name="description" rows="4" placeholder="Contoh: Username target, link postingan, atau detail lainnya"></textarea>
 
             <button type="submit">Kirim</button>
         </form>
@@ -189,3 +269,4 @@
     </div>
 </body>
 </html>
+
